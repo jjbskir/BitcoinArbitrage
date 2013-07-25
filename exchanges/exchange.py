@@ -1,6 +1,6 @@
-from Requests import Requests
+from exchanges.Requests import Requests
 
-class BitstampAPI():
+class BitstampAPI:
     '''
     Bitstamp API.
     '''

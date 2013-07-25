@@ -3,12 +3,14 @@ import urllib.parse
 import urllib.error
 import json
 
-class Requests():
+class Requests:
     '''
     HTTP request class. For making GET and POST calls.
     '''
     def __init__(self, baseURL):
         self.baseURL = baseURL
+        self.URLError = None
+        self.HTTPError = None
 
     def get(self, ext, params=None):
         '''
@@ -28,9 +30,11 @@ class Requests():
         except urllib.error.URLError as e:
             # handle URL errors.
             print(e.reason)
+            self.URLError = e.reason
         except urllib.error.HTTPError as e:
             # handle HTTP errors.
             print(e.reason)
+            self.HTTPError = e.reason
         if not req:
             return None
         else:
