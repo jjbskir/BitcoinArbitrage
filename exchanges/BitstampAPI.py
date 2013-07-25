@@ -1,6 +1,6 @@
 from exchanges.Requests import Requests
 
-class exchange:
+class BitstampAPI:
     '''
     Bitstamp API.
     '''
@@ -44,14 +44,20 @@ class exchange:
         ask - lowest sell order
         '''
         ext = 'ticker/'
-        self.req.get(ext)
+        return self.req.get(ext)
 
     def eur_usd_conversion(self):
+        '''
+        Convert from Euero to USD.
+        @return Conversion rate
+        '''
         ext = 'eur_usd/'
         return self.req.get(ext)
 
     def get_mean_price(self):
         '''
+        TODO: Calculate volume-weighted average.
+        http://en.wikipedia.org/wiki/Volume-weighted_average_price
         Calculate the mean transaction price from the transactions.
         @return: mean price.
         '''
@@ -59,6 +65,19 @@ class exchange:
         prices = [float(t['price']) for t in transactions]
         mean = sum(prices) / len(prices)
         return mean
+
+    def volume_weighted_avg_price(self):
+        '''
+        TODO: Calculate volume-weighted average.
+        http://en.wikipedia.org/wiki/Volume-weighted_average_price
+        Calculate the mean transaction price from the transactions.
+        @return: mean price.
+        '''
+        transactions = self.transactions()
+        prices = [float(t['price']) for t in transactions]
+        amounts = [float(t['amount']) for t in transactions]
+        avg = sum([price*amount for price, amount in zip(prices, amounts)]) / sum(amounts)
+        return avg
 
 
 if __name__ == '__main__':

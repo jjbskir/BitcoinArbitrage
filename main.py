@@ -1,9 +1,20 @@
-from exchanges.exchange import BitstampAPI
-from tests.test_exchanges.TestRequests import TestRequests
+from exchanges.BitstampAPI import BitstampAPI
+from exchanges.MtGoxAPI import MtGoxAPI
 
 
 if __name__ == '__main__':
-    #e = BitstampAPI()
-    #print(e.get_mean_price())
-    t = TestRequests()
-    t.main()
+
+    b = BitstampAPI()
+    print(b.order_book())
+    #print(b.volume_weighted_avg_price())
+
+    '''
+    m = MtGoxAPI()
+    bids_asks = m.bid_ask()
+    print('ask')
+    print(bids_asks['ask'])
+    print('bid')
+    print(bids_asks['bid'])
+    print('weight')
+    print(m.avg_price())
+    '''

@@ -47,4 +47,11 @@ class Requests:
         @param req: HTTP GET request using urllib.request.urlopen.
         @return: dictionary of values.
         '''
-        return json.loads(req.read().decode('utf8'))
+        try:
+            return json.loads(req.read().decode('utf8'))
+        except Exception:
+            print('JSON Decoder failed')
+
+
+
+
