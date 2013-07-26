@@ -1,19 +1,21 @@
 from exchanges.AbstractExchange import AbstractExchange
 
-class Bitstamp(AbstractExchange):
+class Btce(AbstractExchange):
     '''
-    Bitstamp class
+    btc-e exchange.
     '''
     def __init__(self):
-        super(Bitstamp, self).__init__()
+        super(Btce, self).__init__()
 
     def bid_ask_prices(self, depth_data):
-        '''
-        Extract bid and ask prices from the JSON data returned from the exchange.
+        """
+        Calculate the average ask and bid price.
 
-        :param depth_data: Depth data called from the exchange API. Should be a dictionary of bid and ask data.
+        :param depth_data: Depth data from btc-e exchange. Dictionary with asks and bids.
+            bids: Bid list of prices and quantities.
+            asks: Ask list of prices and quantities.
         :return: Ask and bid volume weighted avg prices.
-        '''
+        """
         asks = depth_data['asks']
         bids = depth_data['bids']
         ask_price = self.calculate_price(asks)
@@ -29,19 +31,12 @@ class Bitstamp(AbstractExchange):
         '''
         prices, amounts = [], []
         price, amount = 0, 1
-        count = 0
         for data in asks_or_bids:
             prices.append(float(data[price]))
             amounts.append(float(data[amount]))
-            if count == 400:
-                break
-            count += 1
         return prices, amounts
 
+
 if __name__ == '__main__':
-    b = Bitstamp()
-    print(b.calculate_bis_ask_prices())
-
-
-
-
+    m = Btce()
+    print(m.calculate_bis_ask_prices())

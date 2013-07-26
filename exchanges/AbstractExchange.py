@@ -44,13 +44,15 @@ class AbstractExchange(object):
         :return: Price corresponding to either ask or bid. The price has been filtered for outliers.
         '''
         # extract_prices_amounts is abstract and should be different for each exchange.
+        # Makes data usable for this function. Data from API's can be different in each exchange.
         prices, amounts = self.extract_prices_amounts(depth_data)
         std = self.weighted_std(prices, amounts)
         avg = self.weighted_avg(prices, amounts)
+
         prices_filtered, amounts_filtered = [], []
         for i in range(len(prices)):
             # filter price and amounts, by removing one past a certain threshhold.
-            if avg - std < prices[i]*amounts[i] < avg + std:
+            if avg - (std*100) < prices[i]*amounts[i] < avg + (std*100):
                 # use standard deviation to remove outliers.
                 prices_filtered.append(prices[i])
                 amounts_filtered.append(amounts[i])
@@ -71,7 +73,7 @@ class AbstractExchange(object):
             avg = np.average(prices, weights=amounts)
             return avg
         except ZeroDivisionError:
-            print('Weights sum to zero, cant be normalized')
+            print('Weights sum to zero, cant be normalized in calculating average.')
 
     def weighted_std(self, values, weights):
         '''
@@ -89,7 +91,7 @@ class AbstractExchange(object):
             weighted_std = math.sqrt(np.dot(weights, (values-avg)**2)/ sum(weights))
             return weighted_std
         except ZeroDivisionError:
-            print('Weights sum to zero, cant be normalized')
+            print('Weights sum to zero, cant be normalized in calculating standard deviation')
 
     def create_dict(self, ask, bid):
         """
@@ -113,6 +115,7 @@ class AbstractExchange(object):
 
         :param depth_data: Data from the exchange API in JSON format.
             Should be a dictionary of bid and ask data.
+        :return: Ask and bid volume weighted avg prices.
         :raise: Not Implemented Error.
         """
         raise NotImplementedError( "Should have implemented bid_ask_prices" )
