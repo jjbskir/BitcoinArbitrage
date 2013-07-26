@@ -1,12 +1,12 @@
-from exchanges.Requests import Requests
+from exchanges.apis.AbstractExchangeAPI import AbstractExchangeAPI
 
-class BitstampAPI:
+class BitstampAPI(AbstractExchangeAPI):
     '''
     Bitstamp API.
     '''
     def __init__(self):
         baseURL = 'https://www.bitstamp.net/api/'
-        self.req = Requests(baseURL)
+        super(BitstampAPI, self).__init__(baseURL)
 
     def transactions(self):
         '''
@@ -53,31 +53,6 @@ class BitstampAPI:
         '''
         ext = 'eur_usd/'
         return self.req.get(ext)
-
-    def get_mean_price(self):
-        '''
-        TODO: Calculate volume-weighted average.
-        http://en.wikipedia.org/wiki/Volume-weighted_average_price
-        Calculate the mean transaction price from the transactions.
-        @return: mean price.
-        '''
-        transactions = self.transactions()
-        prices = [float(t['price']) for t in transactions]
-        mean = sum(prices) / len(prices)
-        return mean
-
-    def volume_weighted_avg_price(self):
-        '''
-        TODO: Calculate volume-weighted average.
-        http://en.wikipedia.org/wiki/Volume-weighted_average_price
-        Calculate the mean transaction price from the transactions.
-        @return: mean price.
-        '''
-        transactions = self.transactions()
-        prices = [float(t['price']) for t in transactions]
-        amounts = [float(t['amount']) for t in transactions]
-        avg = sum([price*amount for price, amount in zip(prices, amounts)]) / sum(amounts)
-        return avg
 
 
 if __name__ == '__main__':
