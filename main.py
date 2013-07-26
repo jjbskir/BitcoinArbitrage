@@ -1,5 +1,4 @@
-from exchanges.BitstampAPI import BitstampAPI
-from exchanges.MtGoxAPI import MtGoxAPI
+from exchanges.apis import BitstampAPI
 
 
 if __name__ == '__main__':

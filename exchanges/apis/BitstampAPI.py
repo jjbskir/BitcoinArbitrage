@@ -21,7 +21,7 @@ class BitstampAPI:
         params = {'timedelta': 3600}
         return self.req.get(ext, params)
 
-    def order_book(self, ordergrouping=1):
+    def depth(self, ordergrouping=1):
         '''
         Dictionary with bids and asks.
         @param: group - group orders with the same price (0 - false; 1 - true). Default: 1.
@@ -82,7 +82,7 @@ class BitstampAPI:
 
 if __name__ == '__main__':
     api = BitstampAPI()
-    print(api.get_mean_price())
+    print(api.depth())
 
 
 
