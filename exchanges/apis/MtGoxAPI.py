@@ -1,6 +1,6 @@
-from exchanges.Requests import Requests
+from exchanges.apis.AbstractExchangeAPI import AbstractExchangeAPI
 
-class MtGoxAPI:
+class MtGoxAPI(AbstractExchangeAPI):
     '''
     Mt. Gox API.
     @note: Mt. Gox's api does not use trailing slashes.
@@ -8,7 +8,7 @@ class MtGoxAPI:
     '''
     def __init__(self):
         baseURL = 'https://data.mtgox.com/api/2/'
-        self.req = Requests(baseURL)
+        super(MtGoxAPI, self).__init__(baseURL)
 
     def ticker(self):
         '''

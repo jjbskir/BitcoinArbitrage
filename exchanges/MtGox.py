@@ -1,65 +1,50 @@
+from exchanges.AbstractExchange import AbstractExchange
 import time
-#from exchanges.apis.MtGoxAPI import MtGoxAPI
 
-class MtGox:
+class MtGox(AbstractExchange):
     '''
     Mt gox class.
     '''
     def __init__(self):
-        """
-        init
-        """
-        self.import_api()
+        super(MtGox, self).__init__()
 
-    def bid_ask(self):
-        """
-        Calculate the average ask and bid price.
-        :return: Dictionary with ask and bid volume weighted avg price.
-        """
-        depth_data = self.api.depth()
+    def ask_bid_data(self, depth_data):
+        '''
+        Extract bid and ask prices from the JSON data returned from the exchange.
+
+        :param depth_data: Depth data called from the exchange API. Should be a dictionary of bid and ask data.
+        :return: Ask and bid dictionaries.
+        '''
         if depth_data['result'] == 'success':
-            # ask data
             asks = depth_data['data']['asks']
-            asks_prices = self.extract_depth(asks, 'price')
-            asks_amounts = self.extract_depth(asks, 'amount')
-            ask_volume_weighted_avg_price = self.volume_weighted_avg_price(asks_prices, asks_amounts)
-            # bids data
             bids = depth_data['data']['bids']
-            bids_prices = self.extract_depth(bids, 'price')
-            bids_amounts = self.extract_depth(bids, 'amount')
-            bid_volume_weighted_avg_price = self.volume_weighted_avg_price(bids_prices, bids_amounts)
-            # add ask and bid volume weighted avg price to dict.
-            ask_bid_dict = {'ask': ask_volume_weighted_avg_price, 'bid': bid_volume_weighted_avg_price}
-            return ask_bid_dict
-        return None
+            return asks, bids
 
-    def extract_depth(self, dict, key):
-        """
-        :param dict: dictionary of prices and amounts of bitcoins.
-        :param key: Key to look for in dictionary.
-        :return: List of values from dictionary that were part of a key.
-        """
-        #TODO: check that time is ok.
-        # time since now. 60 minutes ago.
-        t = int((time.time() - 36000) * 1000000) # seconds
-        list = [d[key] for d in dict if float(d['stamp']) > t]
-        return list
-
-    def volume_weighted_avg_price(self, prices, amounts):
+    def extract_prices_amounts(self, asks_or_bids):
         '''
-        Calculate the volume weighted average price.
-        volume weighted average price = sum(Price[i]*Ammount[i]) / sum(Ammount[i])
-        http://en.wikipedia.org/wiki/Volume-weighted_average_price
-        :param prices: List of prices.
-        :param amounts: List of amounts.
-        :return: A volume weighted avg price.
+        Grabs needed data for calculate_price(). Sorts the data in a way to make it usable for calculate_price().
+
+        :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
+        :return: Lists for both prices and amounts.
         '''
-        avg = sum([price*amount for price, amount in zip(prices, amounts)]) / sum(amounts)
-        return avg
-
-
+        prices, amounts = [], []
+        price, amount = 'price', 'amount'
+        #TODO: check that time is ok. 3600 * 10^-6 = .0036
+        # time since now - .0036 ago.
+        time_subtract = 36
+        time_current = time.time()
+        while len(prices) < 200:
+            # Go through the list until at least the 200 prices have been found that have occured in a certain time frame.
+            # want the time frame to be as small as possible to get the most current prices.
+            t = int((time_current - time_subtract) * 1000000) # seconds
+            for data in asks_or_bids:
+                if float(data['stamp']) > t:
+                    prices.append(data[price])
+                    amounts.append(data[amount])
+            time_subtract = time_subtract*10 # increase the time frame by multiples of 10.
+        return prices, amounts
 
 
 if __name__ == '__main__':
     m = MtGox()
-    print(m.bid_ask())
+    print(m.calculate_bis_ask_prices())

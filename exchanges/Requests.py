@@ -15,40 +15,52 @@ class Requests:
     def get(self, ext, params=None):
         '''
         Creates a get request.
-        @param ext: URL extension for API.
-        @param params: Paramters for GET request.
+
+        :param ext: URL extension for API.
+        :param params: Paramters for GET request.
         '''
+        url = self.create_url(ext, params)
+        response = None
+        try:
+             # try making HTTP GET request.
+            hdr = {'Accept': 'application/json'} # accept JSON data.
+            req = urllib.request.Request(url, headers=hdr) # make request.
+            response = urllib.request.urlopen(req) # get response.
+        except urllib.error.URLError as e:
+            # handle URL errors.
+            print('URL error: ' + e.reason + ' - ' + e.read().decode("utf8", 'ignore'))
+            self.URLError = e.reason
+        except urllib.error.HTTPError as e:
+            # handle HTTP errors.
+            print('HTTP error: ' + e.reason + ' - ' + e.read().decode("utf8", 'ignore'))
+            self.HTTPError = e.reason
+        # JSON decode request if it exists.
+        return self.json_decode(response)
+
+    def create_url(self, ext, params=None):
+        """
+        Create a url from the base url, extension, and api parameters.
+
+        :param ext: URL extension.
+        :param params: API parameters for GET request.
+        :return: Constructed URL for making GET request.
+        """
         url = self.baseURL + ext
         if params:
             # add parameteres to the url.
             params = urllib.parse.urlencode(params)
             url = url + '?' + params
-        req = None
-        try:
-             # try making HTTP GET request.
-            req = urllib.request.urlopen(url)
-        except urllib.error.URLError as e:
-            # handle URL errors.
-            print(e.reason)
-            self.URLError = e.reason
-        except urllib.error.HTTPError as e:
-            # handle HTTP errors.
-            print(e.reason)
-            self.HTTPError = e.reason
-        if not req:
-            return None
-        else:
-            # JSON decode request if it exists.
-            return self.json_decode(req)
+        return url
 
-    def json_decode(self, req):
+    def json_decode(self, response):
         '''
         Takes a JSON HTTP GET request and decodes it into a python dictionary.
-        @param req: HTTP GET request using urllib.request.urlopen.
-        @return: dictionary of values.
+
+        :param req: HTTP GET request using urllib.request.urlopen.
+        :return: dictionary of values.
         '''
         try:
-            return json.loads(req.read().decode('utf8'))
+            return json.loads(response.read().decode('utf8'))
         except Exception:
             print('JSON Decoder failed')
 

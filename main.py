@@ -1,19 +1,20 @@
-from exchanges.apis import BitstampAPI
-
+from exchanges.Bitstamp import Bitstamp
+from exchanges.MtGox import MtGox
+from exchanges.Btce import Btce
+from research.BidAskGaussian import BidAskGaussian
 
 if __name__ == '__main__':
-
-    b = BitstampAPI()
-    print(b.order_book())
-    #print(b.volume_weighted_avg_price())
-
     '''
-    m = MtGoxAPI()
-    bids_asks = m.bid_ask()
-    print('ask')
-    print(bids_asks['ask'])
-    print('bid')
-    print(bids_asks['bid'])
-    print('weight')
-    print(m.avg_price())
+    g = BidAskGaussian()
+    data = g.deserialize()
+    g.fit_gaussian(data['asks'])
+    g.fit_gaussian(data['bids'])
+
+    btce = Btce()
+    print(btce.calculate_bis_ask_prices())
     '''
+    m = MtGox()
+    print(m.calculate_bis_ask_prices())
+
+    b = Bitstamp()
+    print(b.calculate_bis_ask_prices())
