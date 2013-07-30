@@ -37,7 +37,7 @@ class AbstractExchange(object):
         bid_price = self.calculate_price(bids) # calculate the bid price.
         return self.create_dict(ask_price, bid_price) # add ask and bid prices to a dictionary to return.
 
-    def calculate_price(self, depth_data):
+    def calculate_price(self, asks_or_bids):
         '''
         Calculate the price of a ask or bid.
 
@@ -47,7 +47,7 @@ class AbstractExchange(object):
         '''
         # extract_prices_amounts is abstract and should be different for each exchange.
         # Makes data usable for this function. Data from API's can be different in each exchange.
-        prices, amounts = self.extract_prices_amounts(depth_data)
+        prices, amounts = self.extract_prices_amounts(asks_or_bids)
         std = self.weighted_std(prices, amounts)
         avg = self.weighted_avg(prices, amounts)
 

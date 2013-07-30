@@ -34,7 +34,7 @@ class TestAbstractExchange(unittest.TestCase):
 
     def test_weighted_avg(self):
         """
-        Test weighted_avg() -
+        Test weighted_avg() - Calculate average.
         """
         prices = [1 for i in range(10)]
         amounts = [1 for i in range(10)]
@@ -47,9 +47,20 @@ class TestAbstractExchange(unittest.TestCase):
         self.assertEqual(self.ex.weighted_avg(prices, amounts), None)
 
     def test_weighted_std(self):
+        """
+        Test weighted_std() - Calculate standard deviation.
+        """
         prices = [1 for i in range(10)]
         amounts = [1 for i in range(10)]
-        self.assertEqual(self.ex.weighted_std(prices, amounts), 1)
+        self.assertEqual(self.ex.weighted_std(prices, amounts), 0.0)
+
+    def test_create_dict(self):
+        '''
+        Test create_dict() -  Creates a dictionary.
+        '''
+        ask = 1
+        bid = 2
+        self.assertEqual(self.ex.create_dict(ask, bid), {'ask': 1, 'bid': 2})
 
 class AbstractTest(AbstractExchange):
     '''
