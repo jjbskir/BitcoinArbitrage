@@ -17,12 +17,6 @@ class TestBitstamp(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_import_api(self):
-        """
-        Test import_api() - Imports api class for exchange.
-        """
-        self.assertEqual(self.ex.import_api().__class__.__name__, "BitstampAPI")
-
     def test_ask_bid_data(self):
         """
         Test ask_bid_data() - Grabs ask and bid data from a dictionary.
@@ -42,19 +36,6 @@ class TestBitstamp(unittest.TestCase):
         prices, amounts = self.ex.extract_prices_amounts(bid)
         self.assertEqual(prices, [93.28, 93.09, 93.08, 93.02])
         self.assertEqual(amounts, [6.43019329, 3.40800000, 1.94700000, 2.79977423])
-
-    def test_calculate_price(self):
-        """
-        Test calculate_price() - Calculate the price from a list.
-        """
-        pass
-
-    def test_calculate_bis_ask_prices(self):
-        """
-        Test calculate_bis_ask_prices() - calculate a bid and ask price.
-        """
-        pass
-
 
 if __name__ == '__main__':
     t = TestBitstamp()

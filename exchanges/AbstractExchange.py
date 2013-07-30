@@ -55,7 +55,7 @@ class AbstractExchange(object):
         for i in range(len(prices)):
             #TODO: What is best to multiply standard deviation by? Should I check prices[i]*amounts[i], or just prices[i]?
             # filter price and amounts, by removing one past a certain threshhold.
-            if avg - (std*2) < prices[i]*amounts[i] < avg + (std*2):
+            if avg - (std*4) < prices[i] < avg + (std*4):
                 # use standard deviation to remove outliers.
                 prices_filtered.append(prices[i])
                 amounts_filtered.append(amounts[i])
@@ -110,6 +110,24 @@ class AbstractExchange(object):
         else:
             print('Error could not add data to dictionary.')
             return None
+
+    def exchange(self, ask_bid_dict, usd=None, b=None):
+        amount = None
+        if (usd and b) or (not usd and not b):
+            break
+        elif usd:
+            usd_to_b = 1.0 / ask_bid_dict['ask']
+            b = usd * usd_to_b
+            fee = b * perc
+            amount = b - fee
+        elif b:
+            b_to_usd = ask_bid_dict['ask']
+            usd = b * b_to_usd
+            fee = usd * perc
+            amount = usd - fee
+        if fee:
+            fees.append(fee)
+        return amount
 
     def ask_bid_data(self, depth_data):
         """
