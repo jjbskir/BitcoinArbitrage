@@ -16,9 +16,7 @@ class Bitstamp(AbstractExchange):
         """
         asks = depth_data['asks']
         bids = depth_data['bids']
-        cleaned_asks = self.clean_data(asks)
-        cleaned_bids = self.clean_data(bids)
-        return cleaned_asks, cleaned_bids
+        return asks, bids
 
     def clean_data(self, asks_or_bids):
         """
@@ -27,12 +25,10 @@ class Bitstamp(AbstractExchange):
         :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
         :return: Lists containing tuples of prices and amounts.
         """
-        cleanded_asks_or_bids = []
+        cleaned_asks_or_bids = []
         for data in asks_or_bids:
-            cleanded_asks_or_bids.append((float(data[0]), float(data[1])))
-        return cleanded_asks_or_bids
-
-
+            cleaned_asks_or_bids.append((float(data[0]), float(data[1])))
+        return cleaned_asks_or_bids
 
 
 if __name__ == '__main__':

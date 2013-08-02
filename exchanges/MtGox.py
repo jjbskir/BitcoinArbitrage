@@ -12,14 +12,12 @@ class MtGox(AbstractExchange):
         Extract bid and ask prices from the JSON data returned from the exchange.
 
         :param depth_data: Depth data called from the exchange API. Should be a dictionary of bid and ask data.
-        :return: Ask and bid dictionaries.
+        :return: Ask and bid data.
         """
         if depth_data['result'] == 'success':
             asks = depth_data['data']['asks']
             bids = depth_data['data']['bids']
-            cleaned_asks = self.clean_data(asks)
-            cleaned_bids = self.clean_data(bids)
-            return cleaned_asks, cleaned_bids
+            return asks, bids
 
     def clean_data(self, asks_or_bids):
         """
@@ -28,10 +26,10 @@ class MtGox(AbstractExchange):
         :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
         :return: Lists containing tuples of prices and amounts.
         """
-        cleanded_asks_or_bids = []
+        cleaned_asks_or_bids = []
         for data in asks_or_bids:
-            cleanded_asks_or_bids.append((float(data['price']), float(data['amount'])))
-        return cleanded_asks_or_bids
+            cleaned_asks_or_bids.append((float(data['price']), float(data['amount'])))
+        return cleaned_asks_or_bids
 
 
 

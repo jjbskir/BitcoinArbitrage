@@ -12,6 +12,9 @@ class Flow:
     def create_exchanges(self, exchange_names):
         """
         Import exchanges and add them to a dictionary.
+
+        :param exchange_names: Exchange names to import exchange packages.
+        :return: Dictionary with pairs of exchange names and their associated objects.
         """
         exchanges = {}
         for exchange_name in exchange_names:
@@ -28,6 +31,9 @@ class Flow:
         """
         Try a bunch of different arbitrages between all the different exchanges, and see which one makes you the
         most money.
+
+        :return: List containing tuples of starting exchange, final exchange, starting amount usd, ending amount usd.
+        [(exchange1, exchange2, starting usd, final usd)]
         """
         profits = []
         for ex_name_curr in self.exchanges.keys():
@@ -41,8 +47,12 @@ class Flow:
         """
         Make a arbitrage between two exchanges.
         Go from USD -> Bitcoins -> USD.
+
+        :param exchange1: Exchange name.
+        :param exchange2: Exchange name.
+        :return: Arbitrage between two different exchanges and return usd.
         """
-        b = self.exchanges[exchange1].exchange(self.usd, None)
-        usd = self.exchanges[exchange2].exchange(None, b)
+        b = self.exchanges[exchange1].exchange(usd=self.usd)
+        usd = self.exchanges[exchange2].exchange(b=b)
         return usd
 

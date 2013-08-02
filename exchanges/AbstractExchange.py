@@ -47,8 +47,10 @@ class AbstractExchange(object):
         """
         depth_data = self.api.depth() # grab api depth data.
         asks, bids = self.ask_bid_data(depth_data) # grab ask and bid data from dictionary. Puts it in specific format
-        asks_ordered = self.sort_depth(asks, False) # calculate the ask price.
-        bids_ordered = self.sort_depth(bids, True) # calculate the bid price.
+        cleaned_asks = self.clean_data(asks)
+        cleaned_bids = self.clean_data(bids)
+        asks_ordered = self.sort_depth(cleaned_asks, False) # calculate the ask price.
+        bids_ordered = self.sort_depth(cleaned_bids, True) # calculate the bid price.
         return self.create_dict(asks_ordered, bids_ordered) # add ask and bid prices to a dictionary to return.
 
     def sort_depth(self, asks_or_bids, rev=False):
@@ -61,40 +63,6 @@ class AbstractExchange(object):
         """
         asks_or_bids.sort(key=lambda data: float(data[0]), reverse=rev)
         return asks_or_bids
-
-    def weighted_avg(self, prices, amounts):
-        '''
-        Calculate the volume weighted average price.
-        volume weighted average price = sum(Price[i]*Ammount[i]) / sum(Ammount[i])
-        http://en.wikipedia.org/wiki/Volume-weighted_average_price
-
-        :param prices: List of prices.
-        :param amounts: List of amounts.
-        :return: A volume weighted avg price.
-        '''
-        try:
-            avg = np.average(prices, weights=amounts)
-            return avg
-        except ZeroDivisionError:
-            print('Weights sum to zero, cant be normalized in calculating average.')
-
-    def weighted_std(self, values, weights):
-        '''
-        Calculated the weighted standard deviation.
-        weighted standard deviation = sqrt[ (weights[i] * variance[i]) / sum(weights[i]) ]
-        variance = (values[i] - average)**2
-        http://en.wikipedia.org/wiki/Weighted_arithmetic_mean
-
-        :param values: Values of a list, corresponding to prices.
-        :param weights: Values of a list, corresponding to amounts.
-        :return: The weighted standard deviation.
-        '''
-        try:
-            avg = self.weighted_avg(values, weights)
-            weighted_std = math.sqrt(np.dot(weights, (values-avg)**2)/ sum(weights))
-            return weighted_std
-        except ZeroDivisionError:
-            print('Weights sum to zero, cant be normalized in calculating standard deviation')
 
     def create_dict(self, ask, bid):
         """
@@ -114,7 +82,7 @@ class AbstractExchange(object):
     def exchange(self, usd=None, b=None):
         """
         Do an exchange from USD to Bitcoins, or from Bitcoins to USD.
-        Creates conversion rate.
+        Creates conversion rate using depth data.
         Multiplies given currency by conversion rates.
         Subtracts fee depending on the exchange.
 
@@ -123,20 +91,52 @@ class AbstractExchange(object):
         :param b: Amount of Bitcoins to convert to USD.
         :return: USD or Bitcoins.
         """
-        depth = self.depth()
         if (usd and b) or (not usd and not b):
             return None
-        lowest_ask = depth['ask'][0][0]
+        depth = self.exchange_depth(usd, b)
+        ask_avg = np.average([d[0] for d in depth], weights=[d[1] for d in depth])
         if usd:
             amount = usd
-            conversion = 1.0 / lowest_ask
+            conversion = 1.0 / ask_avg
         elif b:
             amount = b
-            conversion = lowest_ask
+            conversion = ask_avg
         total = amount * conversion
         fee = total * self.fee['trading']
         total = total - fee
         return total
+
+    def exchange_depth(self, usd=None, b=None):
+        """
+        Find the total amount of depth needed for a conversion. f
+
+        :param usd: usd amount.
+        :param b: bitcoin amount.
+        :return: List of lists that contain price and amounts. Needed depth for conversion.
+        """
+        if usd:
+            amount = usd
+        elif b:
+            amount = b
+        depth = self.depth()
+        total = 0.0 # total in usd or bitcoins.
+        needed_depth = [] # needed depth information for exchange.
+        for ask in depth['ask']:
+            if total >= amount:
+                # remove unused bitcoins.
+                if usd:
+                    needed_depth[-1][1] -= (total - amount) * (1.0 / needed_depth[-1][0]) # convert from usd to
+                elif b:
+                    needed_depth[-1][1] -= total - amount # subtract bitcoins.
+                break
+            else:
+                if usd:
+                    total += ask[0] * ask[1]
+                elif b:
+                    total += ask[1]
+                needed_depth.append(list(ask))
+        return needed_depth
+
 
 
     def ask_bid_data(self, depth_data):

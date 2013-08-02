@@ -22,7 +22,7 @@ class Requests:
         url = self.create_url(ext, params)
         response = None
         try:
-             # try making HTTP GET request.
+            # try making HTTP GET request.
             hdr = {'Accept': 'application/json'} # accept JSON data.
             req = urllib.request.Request(url, headers=hdr) # make request.
             response = urllib.request.urlopen(req) # get response.
@@ -53,12 +53,12 @@ class Requests:
         return url
 
     def json_decode(self, response):
-        '''
+        """
         Takes a JSON HTTP GET request and decodes it into a python dictionary.
 
-        :param req: HTTP GET request using urllib.request.urlopen.
+        :param response: HTTP GET request using urllib.request.urlopen.
         :return: dictionary of values.
-        '''
+        """
         try:
             return json.loads(response.read().decode('utf8'))
         except Exception:

@@ -16,7 +16,7 @@ class BtceAPI(AbstractExchangeAPI):
             bids: Bid list of prices and quantities.
             asks: Ask list of prices and quantities.
         '''
-        ext = 'btc_usd/Depth'
+        ext = 'btc_usd/depth'
         return self.req.get(ext)
 
 if __name__ == '__main__':
