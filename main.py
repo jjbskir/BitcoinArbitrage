@@ -2,6 +2,7 @@ from exchanges.Bitstamp import Bitstamp
 from exchanges.MtGox import MtGox
 from exchanges.Btce import Btce
 from research.BidAskGaussian import BidAskGaussian
+from MoneyFlow.Flow import Flow
 
 if __name__ == '__main__':
     '''
@@ -9,12 +10,22 @@ if __name__ == '__main__':
     data = g.deserialize()
     g.fit_gaussian(data['asks'])
     g.fit_gaussian(data['bids'])
-
+    '''
     btce = Btce()
-    print(btce.calculate_bis_ask_prices())
+    print(btce.depth())
     '''
     m = MtGox()
-    print(m.calculate_bis_ask_prices())
+    data = m.depth()
+    print(data['ask'][0:5])
+    print(data['bid'][0:5])
 
     b = Bitstamp()
-    print(b.calculate_bis_ask_prices())
+    data = b.depth()
+    #print(data['ask'][0:5])
+    #print(data['bid'][0:5])
+    print(b.exchange(data, b=1))
+
+    exchanges = ['MtGox', 'Bitstamp', 'Btce']
+    flow = Flow(exchanges, 100, 0)
+    print(flow.try_arbitrages())
+    '''

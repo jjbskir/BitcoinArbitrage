@@ -1,5 +1,5 @@
-from tests.test_exchanges.TestRequests import TestRequests
+from tests.test_exchanges.TestAbstractExchange import TestAbstractExchange
 
 if __name__ == '__main__':
-    t = TestRequests()
+    t = TestAbstractExchange()
     t.main()
