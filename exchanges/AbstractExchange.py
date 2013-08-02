@@ -1,3 +1,4 @@
+from exchanges.fees.Fees import Fees
 import importlib
 import numpy as np
 import math
@@ -8,6 +9,7 @@ class AbstractExchange(object):
     '''
     def __init__(self):
         self.api = self.import_api()
+        self.fee = self.import_fee()
 
     def import_api(self):
         """
@@ -27,40 +29,38 @@ class AbstractExchange(object):
             print('Could not import module')
         return api
 
-    def calculate_bis_ask_prices(self):
-        '''
+    def import_fee(self):
+        """
+        Load fee structure for the class.
+
+        :return: fee structure.
+        """
+        fees = Fees()
+        fee = fees.get_fee(self.__class__.__name__)
+        return fee
+
+    def depth(self):
+        """
         The main method for this class. Used to make sure abstract classes are called.
-        '''
+
+        :return: Dictionary with list of ask and bid prices and amounts
+        """
         depth_data = self.api.depth() # grab api depth data.
-        asks, bids = self.ask_bid_data(depth_data) # grab ask and bid data from dictionary.
-        ask_price = self.calculate_price(asks) # calculate the ask price.
-        bid_price = self.calculate_price(bids) # calculate the bid price.
-        return self.create_dict(ask_price, bid_price) # add ask and bid prices to a dictionary to return.
+        asks, bids = self.ask_bid_data(depth_data) # grab ask and bid data from dictionary. Puts it in specific format
+        asks_ordered = self.sort_depth(asks, False) # calculate the ask price.
+        bids_ordered = self.sort_depth(bids, True) # calculate the bid price.
+        return self.create_dict(asks_ordered, bids_ordered) # add ask and bid prices to a dictionary to return.
 
-    def calculate_price(self, asks_or_bids):
-        '''
-        Calculate the price of a ask or bid.
+    def sort_depth(self, asks_or_bids, rev=False):
+        """
+        Sorts ask or bid data. Ask data gets sorted ascending.Bid data descending.
 
-        :param depth_data: data from a api depth call from a exchange. Should be either ask or bid data.
-            Each of these dictionaries or lists should contain prices and amounts. Data will be initially filtered with extract_prices_amounts.
-        :return: Price corresponding to either ask or bid. The price has been filtered for outliers.
-        '''
-        # extract_prices_amounts is abstract and should be different for each exchange.
-        # Makes data usable for this function. Data from API's can be different in each exchange.
-        prices, amounts = self.extract_prices_amounts(asks_or_bids)
-        std = self.weighted_std(prices, amounts)
-        avg = self.weighted_avg(prices, amounts)
-
-        prices_filtered, amounts_filtered = [], []
-        for i in range(len(prices)):
-            #TODO: What is best to multiply standard deviation by? Should I check prices[i]*amounts[i], or just prices[i]?
-            # filter price and amounts, by removing one past a certain threshhold.
-            if avg - (std*4) < prices[i] < avg + (std*4):
-                # use standard deviation to remove outliers.
-                prices_filtered.append(prices[i])
-                amounts_filtered.append(amounts[i])
-        price_final = self.weighted_avg(prices_filtered, amounts_filtered) # calculate the final price with the filtered data.
-        return price_final
+        :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
+        :param rev: Weather data should be sorted ascending or descending.
+        :return: Lists with tuples of price and amount.
+        """
+        asks_or_bids.sort(key=lambda data: float(data[0]), reverse=rev)
+        return asks_or_bids
 
     def weighted_avg(self, prices, amounts):
         '''
@@ -111,23 +111,33 @@ class AbstractExchange(object):
             print('Error could not add data to dictionary.')
             return None
 
-    def exchange(self, ask_bid_dict, usd=None, b=None):
-        amount = None
+    def exchange(self, usd=None, b=None):
+        """
+        Do an exchange from USD to Bitcoins, or from Bitcoins to USD.
+        Creates conversion rate.
+        Multiplies given currency by conversion rates.
+        Subtracts fee depending on the exchange.
+
+        :param ask_bid_dict: Dictionary containing depth data.
+        :param usd: Amount of USD to convert to Bitcoins.
+        :param b: Amount of Bitcoins to convert to USD.
+        :return: USD or Bitcoins.
+        """
+        depth = self.depth()
         if (usd and b) or (not usd and not b):
-            break
-        elif usd:
-            usd_to_b = 1.0 / ask_bid_dict['ask']
-            b = usd * usd_to_b
-            fee = b * perc
-            amount = b - fee
+            return None
+        lowest_ask = depth['ask'][0][0]
+        if usd:
+            amount = usd
+            conversion = 1.0 / lowest_ask
         elif b:
-            b_to_usd = ask_bid_dict['ask']
-            usd = b * b_to_usd
-            fee = usd * perc
-            amount = usd - fee
-        if fee:
-            fees.append(fee)
-        return amount
+            amount = b
+            conversion = lowest_ask
+        total = amount * conversion
+        fee = total * self.fee['trading']
+        total = total - fee
+        return total
+
 
     def ask_bid_data(self, depth_data):
         """
@@ -140,18 +150,17 @@ class AbstractExchange(object):
             prices, amounts,timestamp.
         :raise: Not Implemented Error.
         """
-        raise NotImplementedError( "Should have implemented bid_ask_prices" )
+        raise NotImplementedError( "Should have implemented ask_bid_data" )
 
-    def extract_prices_amounts(self, asks_or_bids):
+    def clean_data(self, asks_or_bids):
         """
         Abstract
-        help extract price and amounts from bids and asks.
+        Cleans asks or bids data by putting it in a format that can be used later on.
 
-        :param ask_or_bids: A list of bid or ask data. Each list at least contains prices and amounts.
-            Can also contain time stamp data.
-        :raise: Not Implemented Error.
+        :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
+        :return: Lists containing tuples of prices and amounts.
         """
-        raise NotImplementedError( "Should have implemented extract_prices_amounts" )
+        raise NotImplementedError( "Should have implemented clean_data" )
 
 
 
