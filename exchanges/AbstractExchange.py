@@ -4,9 +4,9 @@ import numpy as np
 import math
 
 class AbstractExchange(object):
-    '''
+    """
     Abstract class for all the other exchanges.
-    '''
+    """
     def __init__(self):
         self.api = self.import_api()
         self.fee = self.import_fee()
@@ -93,8 +93,9 @@ class AbstractExchange(object):
         """
         if (usd and b) or (not usd and not b):
             return None
-        depth = self.exchange_depth(usd, b)
-        ask_avg = np.average([d[0] for d in depth], weights=[d[1] for d in depth])
+        depth = self.exchange_depth(usd, b) # grab needed depth data.
+        ask_avg = np.average([d[0] for d in depth], weights=[d[1] for d in depth]) # calculate a weighted average from prices and amounts.
+        # create conversion rates
         if usd:
             amount = usd
             conversion = 1.0 / ask_avg
@@ -102,8 +103,8 @@ class AbstractExchange(object):
             amount = b
             conversion = ask_avg
         total = amount * conversion
-        fee = total * self.fee['trading']
-        total = total - fee
+        fee = total * self.fee['trading'] # calculate fees.
+        total = total - fee # subtract fees from total.
         return total
 
     def exchange_depth(self, usd=None, b=None):
@@ -137,7 +138,9 @@ class AbstractExchange(object):
                 needed_depth.append(list(ask))
         return needed_depth
 
-
+    #-_-_-_-_-_-_-_-_-_-=
+    #- Abstract Methods =
+    #-_-_-_-_-_-_-_-_-_-=
 
     def ask_bid_data(self, depth_data):
         """
