@@ -2,7 +2,15 @@ from exchanges.Bitstamp import Bitstamp
 from exchanges.MtGox import MtGox
 from exchanges.Btce import Btce
 from research.BidAskGaussian import BidAskGaussian
-from MoneyFlow.Flow import Flow
+from Arbitrage.Flow import Flow
+
+def output(arbitrage_data):
+    print('Initial Exchange, Final Exchange, Initial Capital, Final Capital')
+    for arbitrage in arbitrage_data:
+        perc = (arbitrage[3] - arbitrage[2])/ arbitrage[3]
+        print(arbitrage[0] + ' -> ' + arbitrage[1] + ': ' + str(arbitrage[2]) + ', ' + str(arbitrage[3]) +  ', percent gain: ' + str(perc))
+
+
 
 if __name__ == '__main__':
     '''
@@ -24,6 +32,8 @@ if __name__ == '__main__':
 
     '''
     exchanges = ['MtGox', 'Bitstamp', 'Btce']
-    flow = Flow(exchanges, 100, 0)
-    print(flow.try_arbitrages())
+    flow = Flow(exchanges, 2500, 5)
+    arbitrage_data = flow.try_arbitrages()
+    arbitrage_data.sort(key=lambda data: float(data[3]), reverse=True)
+    output(arbitrage_data)
 

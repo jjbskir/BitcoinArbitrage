@@ -23,13 +23,13 @@ class BitstampAPI(AbstractExchangeAPI):
         return self.req.get(ext, params)
 
     def depth(self, ordergrouping=1):
-        '''
+        """
         Dictionary with bids and asks.
 
         :param: group - group orders with the same price (0 - false; 1 - true). Default: 1.
         :return: JSON dictionary with "bids" and "asks".
             Each is a list of open orders and each order is represented as a list of price and amount.
-        '''
+        """
         ext = 'order_book/'
         params = {"group": ordergrouping}
         return self.req.get(ext, params)

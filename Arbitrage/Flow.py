@@ -52,7 +52,22 @@ class Flow:
         :param exchange2: Exchange name.
         :return: Arbitrage between two different exchanges and return usd.
         """
-        b = self.exchanges[exchange1].exchange(usd=self.usd)
-        usd = self.exchanges[exchange2].exchange(b=b)
-        return usd
+        usd = self.usd - self.exchanges[exchange1].fee.initial_fee(self.usd)
+        b = self.exchanges[exchange1].exchange(self.exchanges[exchange1].depth(), usd=usd)
+        usd = self.exchanges[exchange2].exchange(self.exchanges[exchange2].depth(), b=b)
+        return usd - self.exchanges[exchange1].fee.final_fee(usd)
+
+    def b_arbitrage(self, exchange1, exchange2):
+        """
+        Make a arbitrage between two exchanges.
+        Go from Bitcoins -> USD -> Bitcoins.
+
+        :param exchange1: Exchange name.
+        :param exchange2: Exchange name.
+        :return: Arbitrage between two different exchanges and return bitcoins.
+        """
+        usd = self.exchanges[exchange1].exchange(b=self.b)
+        b = self.exchanges[exchange2].exchange(usd=usd)
+        return b
+
 

@@ -22,8 +22,8 @@ class Requests:
         url = self.create_url(ext, params)
         response = None
         try:
-            # try making HTTP GET request.
-            hdr = {'Accept': 'application/json'} # accept JSON data.
+            # try making HTTP GET request. use "User-Agent" to make your urllib request seem like it is from a real person.
+            hdr = {'Accept': 'application/json', 'User-Agent' : "Magic Browser"} # accept JSON data.
             req = urllib.request.Request(url, headers=hdr) # make request.
             response = urllib.request.urlopen(req) # get response.
         except urllib.error.URLError as e:

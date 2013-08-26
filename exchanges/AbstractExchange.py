@@ -8,6 +8,9 @@ class AbstractExchange(object):
     Abstract class for all the other exchanges.
     """
     def __init__(self):
+        """
+        Import api and fee class for specific exchange.
+        """
         self.api = self.import_api()
         self.fee = self.import_fee()
 
@@ -33,10 +36,9 @@ class AbstractExchange(object):
         """
         Load fee structure for the class.
 
-        :return: fee structure.
+        :return: fee class with fee structure for specific class.
         """
-        fees = Fees()
-        fee = fees.get_fee(self.__class__.__name__)
+        fee = Fees(self.__class__.__name__)
         return fee
 
     def depth(self):
@@ -53,6 +55,20 @@ class AbstractExchange(object):
         bids_ordered = self.sort_depth(cleaned_bids, True) # calculate the bid price.
         return self.create_dict(asks_ordered, bids_ordered) # add ask and bid prices to a dictionary to return.
 
+    def clean_data_helper(self, asks_or_bids, price_key, amount_key):
+        """
+        Helper function for cleaning data from ask or bid data.
+
+        :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
+        :param price_key: key in either dictionary or list to grab price data.
+        :param amount_key: key in either dictionary or list to grab amount data.
+        :return: Lists containing lists of prices and amounts.
+        """
+        cleaned_asks_or_bids = []
+        for data in asks_or_bids:
+            cleaned_asks_or_bids.append([float(data[price_key]), float(data[amount_key])])
+        return cleaned_asks_or_bids
+
     def sort_depth(self, asks_or_bids, rev=False):
         """
         Sorts ask or bid data. Ask data gets sorted ascending.Bid data descending.
@@ -60,6 +76,7 @@ class AbstractExchange(object):
         :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
         :param rev: Weather data should be sorted ascending or descending.
         :return: Lists with tuples of price and amount.
+        :rtype: {'ask': [[price, amount],...,[price, amount]], 'bid': [[price, amount],...,[price, amount]]}
         """
         asks_or_bids.sort(key=lambda data: float(data[0]), reverse=rev)
         return asks_or_bids
@@ -71,6 +88,7 @@ class AbstractExchange(object):
         :param bid: Bid price
         :param ask: Ask price
         :return: Dictionary of ask and bid price.
+        :rtype: {'ask': [[price, amount],...,[price, amount]], 'bid': [[price, amount],...,[price, amount]]}
         """
         if ask and bid:
             ask_bid_dict = {'ask': ask, 'bid': bid}
@@ -79,7 +97,7 @@ class AbstractExchange(object):
             print('Error could not add data to dictionary.')
             return None
 
-    def exchange(self, usd=None, b=None):
+    def exchange(self, depth, usd=None, b=None):
         """
         Do an exchange from USD to Bitcoins, or from Bitcoins to USD.
         Creates conversion rate using depth data.
@@ -93,7 +111,7 @@ class AbstractExchange(object):
         """
         if (usd and b) or (not usd and not b):
             return None
-        depth = self.exchange_depth(usd, b) # grab needed depth data.
+        depth = self.exchange_depth(depth, usd, b) # grab needed depth data.
         ask_avg = np.average([d[0] for d in depth], weights=[d[1] for d in depth]) # calculate a weighted average from prices and amounts.
         # create conversion rates
         if usd:
@@ -103,26 +121,28 @@ class AbstractExchange(object):
             amount = b
             conversion = ask_avg
         total = amount * conversion
-        fee = total * self.fee['trading'] # calculate fees.
+        fee = self.fee.calculate_trading_fee(total) # calculate fees.
         total = total - fee # subtract fees from total.
         return total
 
-    def exchange_depth(self, usd=None, b=None):
+    def exchange_depth(self, depth, usd=None, b=None):
         """
-        Find the total amount of depth needed for a conversion. f
+        Find the total amount of depth needed for a conversion. Used in exchange().
 
+        :param depth: Exchange ask bid depth data.
         :param usd: usd amount.
         :param b: bitcoin amount.
         :return: List of lists that contain price and amounts. Needed depth for conversion.
         """
         if usd:
             amount = usd
+            depth = depth['ask']
         elif b:
             amount = b
-        depth = self.depth()
+            depth = depth['bid']
         total = 0.0 # total in usd or bitcoins.
         needed_depth = [] # needed depth information for exchange.
-        for ask in depth['ask']:
+        for ask_or_bid in depth:
             if total >= amount:
                 # remove unused bitcoins.
                 if usd:
@@ -132,10 +152,10 @@ class AbstractExchange(object):
                 break
             else:
                 if usd:
-                    total += ask[0] * ask[1]
+                    total += ask_or_bid[0] * ask_or_bid[1]
                 elif b:
-                    total += ask[1]
-                needed_depth.append(list(ask))
+                    total += ask_or_bid[1]
+                needed_depth.append([a for a in ask_or_bid]) # add ask data by copying all of its data onto a new list to avoid memory reference to original depth data
         return needed_depth
 
     #-_-_-_-_-_-_-_-_-_-=
@@ -161,7 +181,7 @@ class AbstractExchange(object):
         Cleans asks or bids data by putting it in a format that can be used later on.
 
         :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
-        :return: Lists containing tuples of prices and amounts.
+        :return: List containing lists of prices and amounts.
         """
         raise NotImplementedError( "Should have implemented clean_data" )
 

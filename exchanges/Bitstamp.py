@@ -23,12 +23,9 @@ class Bitstamp(AbstractExchange):
         Cleans asks or bids data by putting it in a format that can be used later on.
 
         :param asks_or_bids: Either a list of bid or ask data. Each list contains prices and amounts.
-        :return: Lists containing tuples of prices and amounts.
+        :return: Lists containing list of prices and amounts.
         """
-        cleaned_asks_or_bids = []
-        for data in asks_or_bids:
-            cleaned_asks_or_bids.append((float(data[0]), float(data[1])))
-        return cleaned_asks_or_bids
+        return self.clean_data_helper(asks_or_bids, 0, 1)
 
 
 if __name__ == '__main__':
