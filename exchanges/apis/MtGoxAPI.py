@@ -14,8 +14,8 @@ class MtGoxAPI(AbstractExchangeAPI):
     def __init__(self):
         baseURL = 'https://data.mtgox.com/api/2/'
         super(MtGoxAPI, self).__init__(baseURL)
-        self.key = '026e8086-a4c3-4bf4-9028-e6717c99f782'
-        self.secret = 'vjdmtUcXvOvLp/SuGVhuLSSupUjwrBfnl+pCF/8Lju77whHQP5cxdv9Rb+Bzz1jQ+rnMsJOlzqL4torIK8YYKQ=='
+        self.key = ''
+        self.secret = ''
 
     def ticker(self):
         """
