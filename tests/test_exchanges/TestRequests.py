@@ -37,25 +37,25 @@ class TestRequests(unittest.TestCase):
         """
         ext = 'order_book/'
         params = {"group": 0}
-        self.assertEqual(self.req.create_url(ext), 'https://www.bitstamp.net/api/order_book/')
-        self.assertEqual(self.req.create_url(ext, params), 'https://www.bitstamp.net/api/order_book/?group=0')
+        self.assertEqual(self.req.create_url(ext), {'url': 'https://www.bitstamp.net/api/order_book/'})
+        self.assertEqual(self.req.create_url(ext, params), {'url': 'https://www.bitstamp.net/api/order_book/', 'params': b'group=0'})
 
-    def test_get(self):
+    def test_post(self):
         """
         Test get() - HTTP GET request.
         """
         ext = 'order_book/'
         params = {"group": 0}
         # get request with just extension.
-        get1 = self.req.get(ext)
+        get1 = self.req.request(ext)
         self.assertEqual(type(get1), dict)
         # get request with extension and parameters. Should give different result then last get.
-        get2 = self.req.get(ext, params)
+        get2 = self.req.request(ext, params)
         self.assertEqual(type(get2), dict)
         self.assertNotEqual(get1, get2)
         # bad url extension. Should give warning.
         ext_bad = 'bad/'
-        get3 = self.req.get(ext_bad)
+        get3 = self.req.request(ext_bad)
         self.assertEqual(get3, None)
         self.assertEqual(self.req.URLError, 'NOT FOUND')
 

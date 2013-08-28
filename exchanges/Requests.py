@@ -12,19 +12,15 @@ class Requests:
         self.URLError = None
         self.HTTPError = None
 
-    def get(self, ext, params=None):
-        '''
-        Creates a get request.
-
-        :param ext: URL extension for API.
-        :param params: Paramters for GET request.
-        '''
+    def request(self, ext, params=None, headers=None):
         url = self.create_url(ext, params)
+        hdr = self.create_header(headers)
         response = None
         try:
-            # try making HTTP GET request. use "User-Agent" to make your urllib request seem like it is from a real person.
-            hdr = {'Accept': 'application/json', 'User-Agent' : "Magic Browser"} # accept JSON data.
-            req = urllib.request.Request(url, headers=hdr) # make request.
+            if 'params' in url:
+                req = urllib.request.Request(url['url'], url['params'], headers=hdr) # make request.
+            else:
+                req = urllib.request.Request(url['url'], headers=hdr)
             response = urllib.request.urlopen(req) # get response.
         except urllib.error.URLError as e:
             # handle URL errors.
@@ -43,14 +39,28 @@ class Requests:
 
         :param ext: URL extension.
         :param params: API parameters for GET request.
-        :return: Constructed URL for making GET request.
+        :return: Constructed URL for making GET request that are in a dictionary of base url and parameters.
+        url = {'url': url, 'params': params}
         """
-        url = self.baseURL + ext
+        url = {}
+        url['url'] = (self.baseURL + ext)
         if params:
             # add parameteres to the url.
-            params = urllib.parse.urlencode(params)
-            url = url + '?' + params
+            url['params'] = urllib.parse.urlencode(params).encode("utf-8")
         return url
+
+    def create_header(self, headers=None):
+        """
+        Create header to be used in HTTP request.
+        """
+        #TODO: Make Test
+        # try making HTTP GET request. use "User-Agent" to make your urllib request seem like it is from a real person.
+        hdr = { 'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'} # accept JSON data.
+        if headers:
+            hdr.update(headers)
+        return hdr
 
     def json_decode(self, response):
         """

@@ -29,7 +29,6 @@ if __name__ == '__main__':
 
     b = Bitstamp()
     print(b.exchange_depth(b=20))
-    h
     '''
     exchanges = ['MtGox', 'Bitstamp', 'Btce']
     flow = Flow(exchanges, 2500, 5)

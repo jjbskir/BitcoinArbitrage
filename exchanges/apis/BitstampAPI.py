@@ -8,19 +8,9 @@ class BitstampAPI(AbstractExchangeAPI):
         baseURL = 'https://www.bitstamp.net/api/'
         super(BitstampAPI, self).__init__(baseURL)
 
-    def transactions(self):
-        '''
-        100 Most recent transactions.
-
-        :return:
-            date - unix timestamp date and time
-            tid - transaction id
-            price - BTC price
-            amount - BTC amount
-        '''
-        ext = 'transactions/'
-        params = {'timedelta': 3600}
-        return self.req.get(ext, params)
+    """
+    Public Functions
+    """
 
     def depth(self, ordergrouping=1):
         """
@@ -32,22 +22,7 @@ class BitstampAPI(AbstractExchangeAPI):
         """
         ext = 'order_book/'
         params = {"group": ordergrouping}
-        return self.req.get(ext, params)
-
-    def ticker(self):
-        '''
-        Ticker.
-
-        :return:
-            last - last BTC price
-            high - last 24 hours price high
-            low - last 24 hours price low
-            volume - last 24 hours volume
-            bid - highest buy order
-            ask - lowest sell order
-        '''
-        ext = 'ticker/'
-        return self.req.get(ext)
+        return self.req.request(ext, params)
 
     def eur_usd_conversion(self):
         '''
@@ -58,10 +33,20 @@ class BitstampAPI(AbstractExchangeAPI):
         ext = 'eur_usd/'
         return self.req.get(ext)
 
+    """
+    Private Functions
+    """
+
+    def balance(self, user, password):
+        ext = 'balance/'
+        params = {'user': user, 'password': password}
+        return self.req.request(ext, params)
+
 
 if __name__ == '__main__':
     api = BitstampAPI()
     print(api.depth())
+    print(api.balance('07274', 'G3qsqqNtv4qEOx'))
 
 
 

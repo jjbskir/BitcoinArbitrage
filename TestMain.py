@@ -6,6 +6,8 @@ from tests.test_exchanges.TestBitstamp import TestBitstamp
 from tests.test_exchanges.test_apis.TestAbstractExchangeAPI import TestAbstractExchangeAPI
 from tests.test_exchanges.test_apis.TestBistampAPI import TestBitstampAPI
 from tests.test_exchanges.test_apis.TestMtGoxAPI import TestMtGoxAPI
+# fees
+from tests.test_exchanges.test_fees.TestFees import TestFees
 
 if __name__ == '__main__':
     # test exchanges.
@@ -21,4 +23,7 @@ if __name__ == '__main__':
     t=TestBitstampAPI()
     t.main()
     t=TestMtGoxAPI()
+    t.main()
+    # test fees.
+    t=TestFees()
     t.main()
