@@ -46,7 +46,7 @@ class BitstampAPI(AbstractExchangeAPI):
 if __name__ == '__main__':
     api = BitstampAPI()
     print(api.depth())
-    print(api.balance('07274', 'G3qsqqNtv4qEOx'))
+    print(api.balance())
 
 
 
